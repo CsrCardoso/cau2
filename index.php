@@ -13,7 +13,27 @@
 	
 	//Primero las que tienen convocatoria abierta
 	//$query = "SELECT * FROM glpi_users WHERE deadline IS NULL ORDER BY deadline DESC;";
-	$query = "SELECT glpi_tickets.id, glpi_tickets.users_id_recipient, glpi_tickets.date, glpi_tickets.closedate, glpi_users.firstname, glpi_users.realname, glpi_tickets_users.tickets_id, glpi_tickets_users.users_id FROM glpi_tickets, glpi_tickets_users, glpi_users WHERE glpi_tickets.date >= '2015-09-30 18:32:06' AND glpi_tickets.closedate <= '2015-10-01 12:32:24' AND glpi_tickets_users.tickets_id = glpi_tickets.id AND glpi_users.id = glpi_tickets_users.users_id;";
+	/*$query = "SELECT glpi_tickets.id, glpi_tickets.users_id_recipient, glpi_tickets.date, glpi_tickets.closedate, glpi_users.firstname, glpi_users.realname, glpi_tickets_users.tickets_id, glpi_tickets_users.users_id FROM glpi_tickets, glpi_tickets_users, glpi_users WHERE glpi_tickets.date >= '2015-09-30 18:32:06' AND glpi_tickets.closedate <= '2015-10-01 12:32:24' AND glpi_tickets_users.tickets_id = glpi_tickets.id AND glpi_users.id = glpi_tickets_users.users_id;";
+	*/
+
+	/*$query = "SELECT glpi_tickets.id, glpi_tickets.users_id_recipient, glpi_tickets.date, glpi_tickets.closedate, glpi_users.firstname, glpi_users.realname, glpi_tickets_users.tickets_id, glpi_tickets_users.users_id FROM glpi_tickets, glpi_tickets_users, glpi_users WHERE glpi_tickets.date >= '2015-09-30 18:32:06' AND glpi_tickets.closedate <= '2015-10-01 12:32:24' AND glpi_tickets_users.tickets_id = glpi_tickets.id AND glpi_users.id = glpi_tickets_users.users_id;";
+
+
+*/
+
+$query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, TU.type, U.name, U2.name AS name2
+	FROM glpi_tickets_users TU
+	INNER JOIN glpi_tickets T ON TU.tickets_id = T.id 
+	INNER JOIN glpi_users U ON TU.users_id = U.id
+	INNER JOIN glpi_users U2 ON U2.id = TU.users_id 
+	WHERE 
+	T.date >= '2015-09-30 18:32:06' AND 
+	T.closedate <= '2015-10-01 12:32:24'
+		GROUP BY TU.users_id
+	;";
+
+
+
 	//Execute query
 	$qry_result = $mysqli->query($query);
 
@@ -62,52 +82,53 @@
 
 
 
-foreach ($row as $arrayfila) {
-	//var_dump($arrayfila);
- //if($arrayfila['id'] == $row['id']){
 
-/*		if ($row['users_id_recipient'] == $row['users_id']) {
-			//asesor designado
-			$display_string .="<td>".$row['firstname']."</td>";
-			$display_string .="<td>".$row['realname']."</td>";
-		///	$display_string .= $asesorrealname;
-		}
-
-
-		else if ($row['users_id_recipient'] != $row['users_id']) {
-			$display_string .="<td>".$row['tickets_id']."</td>";
-			$display_string .="<td>".$row['date']."</td>";
-			$display_string .="<td>".$row['closedate']."</td>";
-			$display_string .="<td>".$row['closedate']."</td>";
+			foreach ($row as $arrayfila) {
 			
-			$display_string .="<td>".$row['firstname']."</td>";
-			$display_string .="<td>".$row['realname']."</td>";
-			//asesor designado
+			 //if($arrayfila['id'] == $row['id']){
+
+			/*		if ($row['users_id_recipient'] == $row['users_id']) {
+						//asesor designado
+						$display_string .="<td>".$row['firstname']."</td>";
+						$display_string .="<td>".$row['realname']."</td>";
+					///	$display_string .= $asesorrealname;
+					}
 
 
-		}
+					else if ($row['users_id_recipient'] != $row['users_id']) {
+						$display_string .="<td>".$row['tickets_id']."</td>";
+						$display_string .="<td>".$row['date']."</td>";
+						$display_string .="<td>".$row['closedate']."</td>";
+						$display_string .="<td>".$row['closedate']."</td>";
+						
+						$display_string .="<td>".$row['firstname']."</td>";
+						$display_string .="<td>".$row['realname']."</td>";
+						//asesor designado
 
-		else{
-			echo "otro caso";
-		}
-*/
 
-//	}
+					}
 
-}
+					else{
+						echo "otro caso";
+					}
+			*/
+
+			//	}
+
+			}
 
 //if ($row['id'] == $arrayfila) {
 	//var_dump($row['id']);
 
 //}
 
-$idrow = $row['id'];
+/*$idrow = $row['id'];
 //var_dump($idrow);
 if ($row['id'] == $idrow) {
 	var_dump($row);
 	echo "alert";
 }
-
+*/
 			/*$display_string .= "<td>".$row['firstname']."</td>";
 
 			$display_string .= "<td>".$row['realname']."</td>";
@@ -117,8 +138,26 @@ if ($row['id'] == $idrow) {
 		//$display_string .= "</tr>";
 	
 
+
+
+
 	}
 
+$row2 = $qry_result;
+//var_dump($row2);
+
+
+
+foreach ($row2 as $key) {
+	
+
+
+
+
+	var_dump($key);
+						
+
+}
 
 
 
