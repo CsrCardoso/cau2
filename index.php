@@ -29,7 +29,7 @@ $query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, T
 	WHERE 
 	T.date >= '2015-09-30 18:32:06' AND 
 	T.closedate <= '2015-10-01 12:32:24'
-		GROUP BY TU.users_id
+		/*GROUP BY TU.users_id*/
 	;";
 
 
@@ -149,14 +149,28 @@ $row2 = $qry_result;
 
 
 foreach ($row2 as $key) {
+			
 	
+	/*foreach ($row2 as $idev) {
+			//var_dump("Hola".$idev['id']);
+	}	
+*/
 
+	     foreach($row2 as $key=>$value){
+            if (is_array($value)){
+                //si es un array sigo recorriendo
+              echo 'key:'. $key;
+              echo '<br>';
+           //  recorro($value);
+          }else{  
+             //si es un elemento lo muestro
+             echo $key.': '.$value ;
+             echo '<br>';
+          }
+ 
+       }
 
-
-
-	var_dump($key);
-						
-
+	var_dump($key['id']);
 }
 
 
