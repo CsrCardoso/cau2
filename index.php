@@ -1,7 +1,9 @@
 <?php
+
 	$i=0;
 	// Conexión al servidor
-	$mysqli = new mysqli("cau2.colmex.mx", "julio", "julius", "dbglpi");
+	//$mysqli = new mysqli("cau2.colmex.mx", "julio", "julius", "dbglpi");
+	$mysqli = new mysqli("localhost", "root", "", "dbglpi");
 	
 	/* check connection */ 
 	if (mysqli_connect_errno()) {
@@ -26,9 +28,9 @@ $query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, T
 	INNER JOIN glpi_tickets T ON TU.tickets_id = T.id 
 	INNER JOIN glpi_users U ON TU.users_id = U.id
 	INNER JOIN glpi_users U2 ON U2.id = TU.users_id 
-	WHERE 
+	/*WHERE 
 	T.date >= '2015-09-30 18:32:06' AND 
-	T.closedate <= '2015-10-01 12:32:24'
+	T.closedate <= '2015-10-17 23:32:24'*/
 		/*GROUP BY TU.users_id*/
 	;";
 
@@ -37,7 +39,7 @@ $query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, T
 	//Execute query
 	$qry_result = $mysqli->query($query);
 
-	//var_dump($qry_result->fetch_assoc());
+	//var_dump($qry_result);
 	//$row = $qry_result->fetch_assoc();
 
 	if($qry_result->num_rows==0){
@@ -71,7 +73,7 @@ $query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, T
 
 
 	while($row = $qry_result->fetch_assoc()){
-	//	var_dump($row);
+	var_dump($row);
 		/*$i++;
 		if($i % 2!=0){
 			$display_string .= "<tr class='odd-row'>";
@@ -147,34 +149,35 @@ $row2 = $qry_result;
 //var_dump($row2);
 
 
+$resultado = "";
 
 foreach ($row2 as $key) {
 			
+		
+		var_dump($key['id']);
+		$ids = $key['id'];
+		
+		$array = array('type' => $key['type']);	
+
+			$resultado = $array;
+
+
+		if($key['id']){
+
+		}
 	
 	/*foreach ($row2 as $idev) {
 			//var_dump("Hola".$idev['id']);
 	}	
 */
 
-	     foreach($row2 as $key=>$value){
-            if (is_array($value)){
-                //si es un array sigo recorriendo
-              echo 'key:'. $key;
-              echo '<br>';
-           //  recorro($value);
-          }else{  
-             //si es un elemento lo muestro
-             echo $key.': '.$value ;
-             echo '<br>';
-          }
- 
-       }
 
-	var_dump($key['id']);
 }
 
+var_dump( array_unique($ids));
 
 
+//https://sysengineers.wordpress.com/2013/10/28/update-glpi-tickets-with-requesters-group/
 
 
 	//echo $display_string;
