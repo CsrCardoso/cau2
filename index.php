@@ -23,18 +23,20 @@
 
 */
 
-$query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, TU.type, U.name, U2.name AS name2
+/*$query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, TU.type, U.name, U2.name AS name2
 	FROM glpi_tickets_users TU
 	INNER JOIN glpi_tickets T ON TU.tickets_id = T.id 
 	INNER JOIN glpi_users U ON TU.users_id = U.id
-	INNER JOIN glpi_users U2 ON U2.id = TU.users_id 
+	INNER JOIN glpi_users U2 ON U2.id = TU.users_id */
 	/*WHERE 
 	T.date >= '2015-09-30 18:32:06' AND 
 	T.closedate <= '2015-10-17 23:32:24'*/
 		/*GROUP BY TU.users_id*/
-	;";
+	/*;";*/
 
 
+$query = "SELECT id, date, closedate 
+			FROM glpi_tickets;";
 
 	//Execute query
 	$qry_result = $mysqli->query($query);
@@ -71,9 +73,51 @@ $query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, T
 
 //$row2 = $qry_result->fetch_assoc();
 
+$resultado = "";
 
-	while($row = $qry_result->fetch_assoc()){
+while($row = $qry_result->fetch_assoc()){
 	var_dump($row);
+
+		$idticket = $row['id'];
+		$inicio = $row['date'];
+		$termino = $row['closedate'];
+
+		$query2 = "SELECT users_id, type			
+				FROM glpi_tickets_users
+				WHERE tickets_id = ".$row['id']."
+				;";
+		//Execute query
+		$tickets_user = $mysqli->query($query2);
+
+		while($users = $tickets_user->fetch_assoc()){
+			var_dump($users);
+
+			$query3 = "SELECT name			
+			FROM glpi_users
+			WHERE id = ".$users['users_id']."
+			;";
+
+			$datosusers = $mysqli->query($query3);
+			$datos = $datosusers->fetch_assoc();
+
+			//while(){
+			 if($users['type'] == 1){
+			 	$ingreso = $datos['name'];
+			 }elseif ($users['type'] == 2) {
+			 	$asignado = $datos['name'];
+			 }elseif ($users['type'] == 3) {
+			 	$solicitante = $datos['name'];
+			 }
+
+			var_dump($datos);
+
+
+			//}
+
+			//$resultado .= "<div>".$idus['type']."</div>";
+			//$resultado .= "<div>".$row['id']."</div>";
+		}
+
 		/*$i++;
 		if($i % 2!=0){
 			$display_string .= "<tr class='odd-row'>";
@@ -85,7 +129,7 @@ $query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, T
 
 
 
-			foreach ($row as $arrayfila) {
+			//foreach ($row as $arrayfila) {
 			
 			 //if($arrayfila['id'] == $row['id']){
 
@@ -117,7 +161,7 @@ $query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, T
 
 			//	}
 
-			}
+			//}
 
 //if ($row['id'] == $arrayfila) {
 	//var_dump($row['id']);
@@ -141,11 +185,23 @@ if ($row['id'] == $idrow) {
 	
 
 
+}
+
+$resultado = array(
+	'idticket' => $idticket,
+	'inicio' => $inicio,
+	'termino' => $termino,
+	'tiemporeal' => "por definir",
+	'register' => $ingreso,
+	'asignado' => $asignado,
+	'solicitante' => $solicitante
+	);
 
 
-	}
+var_dump($resultado);
 
-$row2 = $qry_result;
+
+/*$row2 = $qry_result;
 //var_dump($row2);
 
 
@@ -169,12 +225,11 @@ foreach ($row2 as $key) {
 	/*foreach ($row2 as $idev) {
 			//var_dump("Hola".$idev['id']);
 	}	
-*/
+	*/
 
 
-}
+/*}*/
 
-var_dump( array_unique($ids));
 
 
 //https://sysengineers.wordpress.com/2013/10/28/update-glpi-tickets-with-requesters-group/
