@@ -2,8 +2,8 @@
 
 	$i=0;
 	// Conexión al servidor
-	//$mysqli = new mysqli("cau2.colmex.mx", "julio", "julius", "dbglpi");
-	$mysqli = new mysqli("localhost", "root", "", "dbglpi");
+	$mysqli = new mysqli("cau2.colmex.mx", "julio", "julius", "dbglpi");
+	//$mysqli = new mysqli("localhost", "root", "", "dbglpi");
 	
 	/* check connection */ 
 	if (mysqli_connect_errno()) {
@@ -35,8 +35,12 @@
 	/*;";*/
 
 
-$query = "SELECT id, date, closedate 
-			FROM glpi_tickets;";
+$query = "SELECT id, date, closedate, actiontime 
+			FROM glpi_tickets
+			WHERE 
+				date >= '2015-09-01 00:32:06' AND 
+				closedate <= '2015-10-05 23:32:24'
+			;";
 
 	//Execute query
 	$qry_result = $mysqli->query($query);
@@ -73,174 +77,76 @@ $query = "SELECT id, date, closedate
 
 //$row2 = $qry_result->fetch_assoc();
 
-$resultado = "";
+$final = array();
 
 while($row = $qry_result->fetch_assoc()){
-	var_dump($row);
+	//var_dump($row);
 
 		$idticket = $row['id'];
 		$inicio = $row['date'];
 		$termino = $row['closedate'];
+		$tiempo = $row['actiontime'];
 
 		$query2 = "SELECT users_id, type			
-				FROM glpi_tickets_users
-				WHERE tickets_id = ".$row['id']."
-				;";
+					FROM glpi_tickets_users
+					WHERE tickets_id = ".$row['id']."
+					;";
 		//Execute query
 		$tickets_user = $mysqli->query($query2);
 
 		while($users = $tickets_user->fetch_assoc()){
-			var_dump($users);
+			//var_dump($users);
 
 			$query3 = "SELECT name			
-			FROM glpi_users
-			WHERE id = ".$users['users_id']."
-			;";
+						FROM glpi_users
+						WHERE id = ".$users['users_id']."
+						;";
 
 			$datosusers = $mysqli->query($query3);
 			$datos = $datosusers->fetch_assoc();
 
-			//while(){
 			 if($users['type'] == 1){
 			 	$ingreso = $datos['name'];
 			 }elseif ($users['type'] == 2) {
 			 	$asignado = $datos['name'];
 			 }elseif ($users['type'] == 3) {
-			 	$solicitante = $datos['name'];
+			 	//$solicitante = $datos['name'];
 			 }
 
-			var_dump($datos);
+			//var_dump($datos);
 
-
-			//}
-
-			//$resultado .= "<div>".$idus['type']."</div>";
-			//$resultado .= "<div>".$row['id']."</div>";
 		}
 
-		/*$i++;
-		if($i % 2!=0){
-			$display_string .= "<tr class='odd-row'>";
-		}
-		else{
-			$display_string .= "<tr>";
-		}*/
+		$resultado = array(
+			'idticket' => $idticket,
+			'inicio' => $inicio,
+			'termino' => $termino,
+			'tiemporeal' => $tiempo,//valor en segundos
+			'register' => $ingreso,
+			'asignado' => $asignado,
+			'solicitante' => "solicitante"
+			);
 
-
-
-
-			//foreach ($row as $arrayfila) {
-			
-			 //if($arrayfila['id'] == $row['id']){
-
-			/*		if ($row['users_id_recipient'] == $row['users_id']) {
-						//asesor designado
-						$display_string .="<td>".$row['firstname']."</td>";
-						$display_string .="<td>".$row['realname']."</td>";
-					///	$display_string .= $asesorrealname;
-					}
-
-
-					else if ($row['users_id_recipient'] != $row['users_id']) {
-						$display_string .="<td>".$row['tickets_id']."</td>";
-						$display_string .="<td>".$row['date']."</td>";
-						$display_string .="<td>".$row['closedate']."</td>";
-						$display_string .="<td>".$row['closedate']."</td>";
-						
-						$display_string .="<td>".$row['firstname']."</td>";
-						$display_string .="<td>".$row['realname']."</td>";
-						//asesor designado
-
-
-					}
-
-					else{
-						echo "otro caso";
-					}
-			*/
-
-			//	}
-
-			//}
-
-//if ($row['id'] == $arrayfila) {
-	//var_dump($row['id']);
-
-//}
-
-/*$idrow = $row['id'];
-//var_dump($idrow);
-if ($row['id'] == $idrow) {
-	var_dump($row);
-	echo "alert";
-}
-*/
-			/*$display_string .= "<td>".$row['firstname']."</td>";
-
-			$display_string .= "<td>".$row['realname']."</td>";
-		
-		$display_string .= "<td>Abierta</td>";*/
-		
-		//$display_string .= "</tr>";
-	
+		array_push($final, $resultado);
 
 
 }
 
-$resultado = array(
-	'idticket' => $idticket,
-	'inicio' => $inicio,
-	'termino' => $termino,
-	'tiemporeal' => "por definir",
-	'register' => $ingreso,
-	'asignado' => $asignado,
-	'solicitante' => $solicitante
-	);
 
 
-var_dump($resultado);
 
+foreach ($final as $value) {
+	//var_dump($value);
+	$display_string .= "<tr><td>".$value['idticket']."</td><td>".$value['inicio']."</td><td>".$value['termino']."</td><td>".$value['tiemporeal']."</td><td>".$value['register']."</td><td>".$value['asignado']."</td></tr>";
+}
 
-/*$row2 = $qry_result;
-//var_dump($row2);
-
-
-$resultado = "";
-
-foreach ($row2 as $key) {
-			
-		
-		var_dump($key['id']);
-		$ids = $key['id'];
-		
-		$array = array('type' => $key['type']);	
-
-			$resultado = $array;
-
-
-		if($key['id']){
-
-		}
-	
-	/*foreach ($row2 as $idev) {
-			//var_dump("Hola".$idev['id']);
-	}	
-	*/
-
-
-/*}*/
-
-
+$display_string .= "</tbody>";
+echo $display_string;
 
 //https://sysengineers.wordpress.com/2013/10/28/update-glpi-tickets-with-requesters-group/
 
 
-	//echo $display_string;
 
-
-	/*foreach ($row as $valor) {
-			echo $valor.'<br>';
-	}*/
 	
 	mysqli_close($mysqli);
 ?>
