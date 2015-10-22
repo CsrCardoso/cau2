@@ -35,11 +35,13 @@
 	/*;";*/
 
 
-$query = "SELECT id, date, closedate, actiontime 
-			FROM glpi_tickets
+$query = "SELECT T.id, T.date, T.closedate, T.actiontime, GT.groups_id
+			FROM glpi_tickets T
+			INNER JOIN glpi_groups_tickets GT ON GT.tickets_id = T.id 
 			WHERE 
-				date >= '2015-09-01 00:32:06' AND 
-				closedate <= '2015-10-05 23:32:24'
+				date >= '2015-09-30 00:32:06' 
+				AND closedate <= '2015-15-22 10:23:48' 
+				/*AND GT.groups_id = 2;*/
 			;";
 
 	//Execute query
@@ -86,6 +88,7 @@ while($row = $qry_result->fetch_assoc()){
 		$inicio = $row['date'];
 		$termino = $row['closedate'];
 		$tiempo = $row['actiontime'];
+		$groupid = $row['groups_id'];
 
 		$query2 = "SELECT users_id, type			
 					FROM glpi_tickets_users
@@ -124,7 +127,8 @@ while($row = $qry_result->fetch_assoc()){
 			'tiemporeal' => $tiempo,//valor en segundos
 			'register' => $ingreso,
 			'asignado' => $asignado,
-			'solicitante' => "solicitante"
+			'solicitante' => "solicitante",
+			'groupid' => $groupid,
 			);
 
 		array_push($final, $resultado);
@@ -137,7 +141,7 @@ while($row = $qry_result->fetch_assoc()){
 
 foreach ($final as $value) {
 	//var_dump($value);
-	$display_string .= "<tr><td>".$value['idticket']."</td><td>".$value['inicio']."</td><td>".$value['termino']."</td><td>".$value['tiemporeal']."</td><td>".$value['register']."</td><td>".$value['asignado']."</td></tr>";
+	$display_string .= "<tr><td>".$value['idticket']."</td><td>".$value['inicio']."</td><td>".$value['termino']."</td><td>".$value['tiemporeal']."</td><td>".$value['register']."</td><td>".$value['asignado']."</td><td>".$value['groupid']."</td></tr>";
 }
 
 $display_string .= "</tbody>";
