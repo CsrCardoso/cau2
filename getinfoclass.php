@@ -194,10 +194,6 @@ return $final;
 }
 
 //FIN CREAR LISTA ASESORIAS
-
-
-//https://sysengineers.wordpress.com/2013/10/28/update-glpi-tickets-with-requesters-group/
-
 }
 
 	

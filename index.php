@@ -17,7 +17,7 @@ include 'getinfoclass.php';
 
 <div id="page">
 	<div class="center">
-		<form id="search" action="" name="form" method="post">
+		<div id="search">
 			<table border="0" class="tab_cadrehov">
 				<tbody>
 					<tr class="tab_bg_2">
@@ -57,7 +57,7 @@ include 'getinfoclass.php';
 					</tr>
 				</tbody>
 			</table>
-		</form>
+		</div>
 	</div>
 
 <div class="center">
@@ -199,7 +199,7 @@ select {
 }
 
 
-#page form {
+#page #search {
     font-size: 12px;
     margin: 0;
     margin-bottom: 5px;
