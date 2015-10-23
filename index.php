@@ -2,8 +2,8 @@
 
 	$i=0;
 	// Conexión al servidor
-	$mysqli = new mysqli("cau2.colmex.mx", "julio", "julius", "dbglpi");
-	//$mysqli = new mysqli("localhost", "root", "", "dbglpi");
+	//$mysqli = new mysqli("cau2.colmex.mx", "julio", "julius", "dbglpi");
+	$mysqli = new mysqli("localhost", "root", "", "dbglpi");
 	
 	/* check connection */ 
 	if (mysqli_connect_errno()) {
@@ -35,12 +35,37 @@
 	/*;";*/
 
 
+//MODULO CONSULTAR GRUPOS SISTEMA GENERAL
+
+	$querygrups = "SELECT id, name FROM glpi_groups;";
+
+	$grupsArray = $mysqli->query($querygrups);
+
+	$finalgrups = '<select name="getGroup">';
+
+	while($grups = $grupsArray->fetch_assoc()){
+		  $finalgrups .= '<option value="'.$grups['id'].'">'.$grups['name'].'</option>';
+	}
+
+	$finalgrups .= "</select>";
+
+	
+
+	echo '<form id="search" action="" method="post" >
+			'.$finalgrups.'
+			<input type="submit" value="Search">
+			</form>';
+
+//FIN MODULO GRUPOS
+
+
+//CREAR LISTA DE ASESORIAS 
 $query = "SELECT T.id, T.date, T.closedate, T.actiontime, GT.groups_id
 			FROM glpi_tickets T
 			INNER JOIN glpi_groups_tickets GT ON GT.tickets_id = T.id 
 			WHERE 
 				date >= '2015-09-30 00:32:06' 
-				AND closedate <= '2015-15-22 10:23:48' 
+				/*AND closedate <= '2015-15-22 10:23:48' */
 				/*AND GT.groups_id = 2;*/
 			;";
 
@@ -56,9 +81,10 @@ $query = "SELECT T.id, T.date, T.closedate, T.actiontime, GT.groups_id
 	
 	else{
 	//Build Result String
-		$display_string = "<table id='tabla-papers' class='papersSB'>";
+	//
+		$display_string = "<table class='.tab_cadrehov'>";
 		$display_string .= "<thead>";
-		$display_string .= "<tr>";
+		$display_string .= "<tr class='tab_bg_2'>";
 		$display_string .= "<th style='cursor:pointer'>ID</th>";
 		$display_string .= "<th style='cursor:pointer'>Fecha de Inicio</th>";
 		$display_string .= "<th style='cursor:pointer'>Fecha de Termino</th>";
@@ -73,8 +99,6 @@ $query = "SELECT T.id, T.date, T.closedate, T.actiontime, GT.groups_id
 
 		//$display_string .= $qry_result->fetch_assoc();
 		//var_dump($qry_result->fetch_assoc());
-
-
 	}
 
 //$row2 = $qry_result->fetch_assoc();
@@ -100,7 +124,7 @@ while($row = $qry_result->fetch_assoc()){
 		while($users = $tickets_user->fetch_assoc()){
 			//var_dump($users);
 
-			$query3 = "SELECT name			
+			$query3 = "SELECT name, realname, firstname		
 						FROM glpi_users
 						WHERE id = ".$users['users_id']."
 						;";
@@ -109,9 +133,15 @@ while($row = $qry_result->fetch_assoc()){
 			$datos = $datosusers->fetch_assoc();
 
 			 if($users['type'] == 1){
-			 	$ingreso = $datos['name'];
+			 	//persona que solicita
+			 	$nick_solicitante = $datos['name'];
+			 	$nom_solicitante = $datos['firstname'];
+			 	$ape_solicitante = $datos['realname'];
 			 }elseif ($users['type'] == 2) {
-			 	$asignado = $datos['name'];
+			 	//personal Asignado
+			 	$nick_asignado = $datos['name'];
+			 	$nom_asignado = $datos['firstname'];
+			 	$ape_asignado = $datos['realname'];
 			 }elseif ($users['type'] == 3) {
 			 	//$solicitante = $datos['name'];
 			 }
@@ -122,12 +152,13 @@ while($row = $qry_result->fetch_assoc()){
 
 		$resultado = array(
 			'idticket' => $idticket,
-			'inicio' => $inicio,
-			'termino' => $termino,
+			'fecha_ini' => $inicio,
+			'fecha_term' => $termino,
 			'tiemporeal' => $tiempo,//valor en segundos
-			'register' => $ingreso,
-			'asignado' => $asignado,
-			'solicitante' => "solicitante",
+			'autor_nom' => $nom_solicitante,
+			'autor_ape' => $ape_solicitante,
+			'asignado_nom' => $nom_asignado,
+			'asignado_ape' => $ape_asignado,
 			'groupid' => $groupid,
 			);
 
@@ -141,11 +172,69 @@ while($row = $qry_result->fetch_assoc()){
 
 foreach ($final as $value) {
 	//var_dump($value);
-	$display_string .= "<tr><td>".$value['idticket']."</td><td>".$value['inicio']."</td><td>".$value['termino']."</td><td>".$value['tiemporeal']."</td><td>".$value['register']."</td><td>".$value['asignado']."</td><td>".$value['groupid']."</td></tr>";
+	$display_string .= "<tr>
+							<td valign='top'>".$value['idticket']."</td>
+							<td valign='top'>".$value['fecha_ini']."</td>
+							<td valign='top'>".$value['fecha_term']."</td>
+							<td valign='top'>".$value['tiemporeal']."</td>
+							<td valign='top'>".$value['autor_nom']."</td>
+							<td valign='top'>".$value['autor_ape']."</td>
+							<td valign='top'>".$value['asignado_nom']."</td>
+							<td valign='top'>".$value['asignado_ape']."</td>
+						</tr>";
 }
 
 $display_string .= "</tbody>";
 echo $display_string;
+
+//FIN CREAR LISTA ASESORIAS
+
+
+	$searchtable = '<table class="tab_cadre_fixe">
+		<tbody>
+			<tr class="tab_bg_1">
+				<td width="10" class="center">
+
+						
+				</td>
+				<td class="left">
+					<div id="SearchSpanTicket0">
+						<table width="100%">
+							<tbody>
+								<tr class="">
+									<td width="20%">
+										<div class="select2-container" id="s2id_dropdown_criteria_0__searchtype_75902895">
+										<a href="javascript:void(0)" class="select2-choice" tabindex="-1">   
+											<span class="select2-chosen" id="select2-chosen-2">es</span>
+											<abbr class="select2-search-choice-close"></abbr>   
+											<span class="select2-arrow" role="presentation"><b role="presentation"></b></span>
+										</a>
+										<label for="s2id_autogen2" class="select2-offscreen"></label>
+										<input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-2" id="s2id_autogen2">
+										<div class="select2-drop select2-display-none select2-with-searchbox">   
+										<div class="select2-search">       
+										<label for="s2id_autogen2_search" class="select2-offscreen"></label>       
+										<input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-2" id="s2id_autogen2_search" placeholder="">   
+										</div>   
+										<ul class="select2-results" role="listbox" id="select2-results-2">   
+										</ul>
+										</div>
+										</div>
+										<select name="criteria[0][searchtype]" id="dropdown_criteria_0__searchtype_75902895" size="1" tabindex="-1" title="" style="display: none;">
+										<option value="equals" selected="">es</option></select>
+									</td>
+									<td width="80%"><span id="spansearchtypecriteriaTicket0">
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</td>
+			</tr>
+		</tbody>
+	</table>';
+
+echo $searchtable;
 
 //https://sysengineers.wordpress.com/2013/10/28/update-glpi-tickets-with-requesters-group/
 
@@ -154,3 +243,44 @@ echo $display_string;
 	
 	mysqli_close($mysqli);
 ?>
+
+<style type="text/css">
+
+.tab_cadrehov {
+    margin: 10px auto;
+    border: 0;
+    text-align: left;
+    font-size: 11px;
+    width: 95%;
+    background-color: #ffffff;
+    -moz-box-shadow: 0px 1px 2px 1px #D2D2D2;
+    -webkit-box-shadow: 0px 1px 2px 1px #D2D2D2;
+    box-shadow: 0px 1px 2px 1px #D2D2D2;
+    border-spacing: 0;
+}
+
+thead {
+    margin: 10px auto;
+    border: 0;
+    text-align: left;
+    font-size: 11px;
+    width: 95%;
+    background-color: #ffffff;
+    -moz-box-shadow: 0px 1px 2px 1px #D2D2D2;
+    -webkit-box-shadow: 0px 1px 2px 1px #D2D2D2;
+    box-shadow: 0px 1px 2px 1px #D2D2D2;
+    border-spacing: 0;
+}
+
+.tab_bg_2 {
+    background-color: #FFF;
+}
+
+.tab_cadrehov th {
+    background-color: #F8F8F8;
+    color: #2E2E2E;
+    font-size: 11px;
+    border-bottom: 1px solid #EEE;
+}
+
+</style>
