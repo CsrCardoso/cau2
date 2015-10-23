@@ -1,286 +1,325 @@
-<?php
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Estadisticas por Grupo / Area</title>
 
-	$i=0;
-	// Conexión al servidor
-	//$mysqli = new mysqli("cau2.colmex.mx", "julio", "julius", "dbglpi");
-	$mysqli = new mysqli("localhost", "root", "", "dbglpi");
-	
-	/* check connection */ 
-	if (mysqli_connect_errno()) {
-	    printf("Connect failed: %s\n", mysqli_connect_error());
-	    exit();
-	}
-	
-	$mysqli->set_charset("utf8");
-	
-	//Primero las que tienen convocatoria abierta
-	//$query = "SELECT * FROM glpi_users WHERE deadline IS NULL ORDER BY deadline DESC;";
-	/*$query = "SELECT glpi_tickets.id, glpi_tickets.users_id_recipient, glpi_tickets.date, glpi_tickets.closedate, glpi_users.firstname, glpi_users.realname, glpi_tickets_users.tickets_id, glpi_tickets_users.users_id FROM glpi_tickets, glpi_tickets_users, glpi_users WHERE glpi_tickets.date >= '2015-09-30 18:32:06' AND glpi_tickets.closedate <= '2015-10-01 12:32:24' AND glpi_tickets_users.tickets_id = glpi_tickets.id AND glpi_users.id = glpi_tickets_users.users_id;";
-	*/
+<link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" rel="stylesheet">
+<link rel="stylesheet" type="text/css" media="screen" href="http://tarruda.github.com/bootstrap-datetimepicker/assets/css/bootstrap-datetimepicker.min.css">
+  
 
-	/*$query = "SELECT glpi_tickets.id, glpi_tickets.users_id_recipient, glpi_tickets.date, glpi_tickets.closedate, glpi_users.firstname, glpi_users.realname, glpi_tickets_users.tickets_id, glpi_tickets_users.users_id FROM glpi_tickets, glpi_tickets_users, glpi_users WHERE glpi_tickets.date >= '2015-09-30 18:32:06' AND glpi_tickets.closedate <= '2015-10-01 12:32:24' AND glpi_tickets_users.tickets_id = glpi_tickets.id AND glpi_users.id = glpi_tickets_users.users_id;";
+</head>
+<body>
 
+<?php 
+include 'getinfoclass.php';
 
-*/
-
-/*$query = "SELECT T.id, T.users_id_recipient, T.date, T.closedate, TU.users_id, TU.type, U.name, U2.name AS name2
-	FROM glpi_tickets_users TU
-	INNER JOIN glpi_tickets T ON TU.tickets_id = T.id 
-	INNER JOIN glpi_users U ON TU.users_id = U.id
-	INNER JOIN glpi_users U2 ON U2.id = TU.users_id */
-	/*WHERE 
-	T.date >= '2015-09-30 18:32:06' AND 
-	T.closedate <= '2015-10-17 23:32:24'*/
-		/*GROUP BY TU.users_id*/
-	/*;";*/
-
-
-//MODULO CONSULTAR GRUPOS SISTEMA GENERAL
-
-	$querygrups = "SELECT id, name FROM glpi_groups;";
-
-	$grupsArray = $mysqli->query($querygrups);
-
-	$finalgrups = '<select name="getGroup">';
-
-	while($grups = $grupsArray->fetch_assoc()){
-		  $finalgrups .= '<option value="'.$grups['id'].'">'.$grups['name'].'</option>';
-	}
-
-	$finalgrups .= "</select>";
-
-	
-
-	echo '<form id="search" action="" method="post" >
-			'.$finalgrups.'
-			<input type="submit" value="Search">
-			</form>';
-
-//FIN MODULO GRUPOS
-
-
-//CREAR LISTA DE ASESORIAS 
-$query = "SELECT T.id, T.date, T.closedate, T.actiontime, GT.groups_id
-			FROM glpi_tickets T
-			INNER JOIN glpi_groups_tickets GT ON GT.tickets_id = T.id 
-			WHERE 
-				date >= '2015-09-30 00:32:06' 
-				/*AND closedate <= '2015-15-22 10:23:48' */
-				/*AND GT.groups_id = 2;*/
-			;";
-
-	//Execute query
-	$qry_result = $mysqli->query($query);
-
-	//var_dump($qry_result);
-	//$row = $qry_result->fetch_assoc();
-
-	if($qry_result->num_rows==0){
-		$display_string = "No se encontró ningún resultado.";
-	}
-	
-	else{
-	//Build Result String
-	//
-		$display_string = "<table class='.tab_cadrehov'>";
-		$display_string .= "<thead>";
-		$display_string .= "<tr class='tab_bg_2'>";
-		$display_string .= "<th style='cursor:pointer'>ID</th>";
-		$display_string .= "<th style='cursor:pointer'>Fecha de Inicio</th>";
-		$display_string .= "<th style='cursor:pointer'>Fecha de Termino</th>";
-		$display_string .= "<th style='cursor:pointer'>Tiempo Real</th>";
-		$display_string .= "<th style='cursor:pointer'>Nombre del Autor</th>";
-		$display_string .= "<th style='cursor:pointer'>Apellidos del Autor</th>";
-		$display_string .= "<th style='cursor:pointer'>Nombre del Asignado</th>";
-		$display_string .= "<th style='cursor:pointer'>Apellidos del asignado</th>";
-		$display_string .= "</tr>";
-		$display_string .= "</thead>";
-		$display_string .= "<tbody>";
-
-		//$display_string .= $qry_result->fetch_assoc();
-		//var_dump($qry_result->fetch_assoc());
-	}
-
-//$row2 = $qry_result->fetch_assoc();
-
-$final = array();
-
-while($row = $qry_result->fetch_assoc()){
-	//var_dump($row);
-
-		$idticket = $row['id'];
-		$inicio = $row['date'];
-		$termino = $row['closedate'];
-		$tiempo = $row['actiontime'];
-		$groupid = $row['groups_id'];
-
-		$query2 = "SELECT users_id, type			
-					FROM glpi_tickets_users
-					WHERE tickets_id = ".$row['id']."
-					;";
-		//Execute query
-		$tickets_user = $mysqli->query($query2);
-
-		while($users = $tickets_user->fetch_assoc()){
-			//var_dump($users);
-
-			$query3 = "SELECT name, realname, firstname		
-						FROM glpi_users
-						WHERE id = ".$users['users_id']."
-						;";
-
-			$datosusers = $mysqli->query($query3);
-			$datos = $datosusers->fetch_assoc();
-
-			 if($users['type'] == 1){
-			 	//persona que solicita
-			 	$nick_solicitante = $datos['name'];
-			 	$nom_solicitante = $datos['firstname'];
-			 	$ape_solicitante = $datos['realname'];
-			 }elseif ($users['type'] == 2) {
-			 	//personal Asignado
-			 	$nick_asignado = $datos['name'];
-			 	$nom_asignado = $datos['firstname'];
-			 	$ape_asignado = $datos['realname'];
-			 }elseif ($users['type'] == 3) {
-			 	//$solicitante = $datos['name'];
-			 }
-
-			//var_dump($datos);
-
-		}
-
-		$resultado = array(
-			'idticket' => $idticket,
-			'fecha_ini' => $inicio,
-			'fecha_term' => $termino,
-			'tiemporeal' => $tiempo,//valor en segundos
-			'autor_nom' => $nom_solicitante,
-			'autor_ape' => $ape_solicitante,
-			'asignado_nom' => $nom_asignado,
-			'asignado_ape' => $ape_asignado,
-			'groupid' => $groupid,
-			);
-
-		array_push($final, $resultado);
-
-
-}
-
-
-
-
-foreach ($final as $value) {
-	//var_dump($value);
-	$display_string .= "<tr>
-							<td valign='top'>".$value['idticket']."</td>
-							<td valign='top'>".$value['fecha_ini']."</td>
-							<td valign='top'>".$value['fecha_term']."</td>
-							<td valign='top'>".$value['tiemporeal']."</td>
-							<td valign='top'>".$value['autor_nom']."</td>
-							<td valign='top'>".$value['autor_ape']."</td>
-							<td valign='top'>".$value['asignado_nom']."</td>
-							<td valign='top'>".$value['asignado_ape']."</td>
-						</tr>";
-}
-
-$display_string .= "</tbody>";
-echo $display_string;
-
-//FIN CREAR LISTA ASESORIAS
-
-
-	$searchtable = '<table class="tab_cadre_fixe">
-		<tbody>
-			<tr class="tab_bg_1">
-				<td width="10" class="center">
-
-						
-				</td>
-				<td class="left">
-					<div id="SearchSpanTicket0">
-						<table width="100%">
-							<tbody>
-								<tr class="">
-									<td width="20%">
-										<div class="select2-container" id="s2id_dropdown_criteria_0__searchtype_75902895">
-										<a href="javascript:void(0)" class="select2-choice" tabindex="-1">   
-											<span class="select2-chosen" id="select2-chosen-2">es</span>
-											<abbr class="select2-search-choice-close"></abbr>   
-											<span class="select2-arrow" role="presentation"><b role="presentation"></b></span>
-										</a>
-										<label for="s2id_autogen2" class="select2-offscreen"></label>
-										<input class="select2-focusser select2-offscreen" type="text" aria-haspopup="true" role="button" aria-labelledby="select2-chosen-2" id="s2id_autogen2">
-										<div class="select2-drop select2-display-none select2-with-searchbox">   
-										<div class="select2-search">       
-										<label for="s2id_autogen2_search" class="select2-offscreen"></label>       
-										<input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" class="select2-input" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-owns="select2-results-2" id="s2id_autogen2_search" placeholder="">   
-										</div>   
-										<ul class="select2-results" role="listbox" id="select2-results-2">   
-										</ul>
-										</div>
-										</div>
-										<select name="criteria[0][searchtype]" id="dropdown_criteria_0__searchtype_75902895" size="1" tabindex="-1" title="" style="display: none;">
-										<option value="equals" selected="">es</option></select>
-									</td>
-									<td width="80%"><span id="spansearchtypecriteriaTicket0">
-									</td>
-								</tr>
-							</tbody>
-						</table>
-					</div>
-				</td>
-			</tr>
-		</tbody>
-	</table>';
-
-echo $searchtable;
-
-//https://sysengineers.wordpress.com/2013/10/28/update-glpi-tickets-with-requesters-group/
-
-
-
-	
-	mysqli_close($mysqli);
 ?>
 
-<style type="text/css">
+<div id="page">
+	<div class="center">
+		<form id="search" action="" name="form" method="post">
+			<table border="0" class="tab_cadrehov">
+				<tbody>
+					<tr class="tab_bg_2">
+						<td rowspan="2" align="center">
+							<?php 
+							 $finalgrups = new getInfo(); 
+							 echo $finalgrups->getgrupos();
+							?>
+						</td>
+						<td align="right">
+							Fecha inicial :
+						</td>
+						<td id="ext-gen6">
+							<div id="dateinicio" class="input-append date buscar">
+								<input data-format="yyyy-MM-dd hh:mm:ss" type="text" name="fechaini" id="fechaini">
+							      <span class="add-on">
+							        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+							      </span>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td align="right">
+							Fecha final :
+						</td>
+						<td id="ext-gen20">
+							<div id="datefinal" class="input-append date buscar">
+								<input data-format="yyyy-MM-dd hh:mm:ss" type="text" name="fechafin" id="fechafin">
+							      <span class="add-on">
+							        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
+							      </span>
+							</div>
+						</td>
+						<td>
+							<input type="button" value="Search" id="buscar" class="buscar"><span class="glyphicon glyphicon-search" aria-hidden="true"></span>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+		</form>
+	</div>
 
-.tab_cadrehov {
-    margin: 10px auto;
-    border: 0;
-    text-align: left;
-    font-size: 11px;
-    width: 95%;
-    background-color: #ffffff;
-    -moz-box-shadow: 0px 1px 2px 1px #D2D2D2;
-    -webkit-box-shadow: 0px 1px 2px 1px #D2D2D2;
-    box-shadow: 0px 1px 2px 1px #D2D2D2;
-    border-spacing: 0;
+<div class="center">
+<a href="#" class="export">Exportar a excel</a>
+</div>
+
+	<div class="center" id="maintabla">
+
+		<table class='tab_cadrehov'>
+			<thead>
+				<tr class='tab_bg_2'>
+					<th style='cursor:pointer'>ID</th>
+					<th style='cursor:pointer'>Fecha de Inicio</th>
+					<th style='cursor:pointer'>Fecha de Termino</th>
+					<th style='cursor:pointer'>Tiempo Real</th>
+					<th style='cursor:pointer'>Nombre del Autor</th>
+					<th style='cursor:pointer'>Apellidos del Autor</th>
+					<th style='cursor:pointer'>Nombre del Asignado</th>
+					<th style='cursor:pointer'>Apellidos del asignado</th>
+				</tr>
+			</thead>
+			<tbody id="aqui">
+
+				
+
+			</tbody>
+		</table>
+
+		<?php// echo $display_string; ?>
+	</div>
+</div>
+
+
+
+    <script type="text/javascript"
+     src="http://cdnjs.cloudflare.com/ajax/libs/jquery/1.8.3/jquery.min.js">
+    </script> 
+    <script type="text/javascript"
+     src="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js">
+    </script>
+    <script type="text/javascript"
+     src="http://tarruda.github.com/bootstrap-datetimepicker/assets/js/bootstrap-datetimepicker.min.js">
+    </script>
+    <script type="text/javascript"
+     src="http://tarruda.github.com/bootstrap-datetimepicker/assets/js/bootstrap-datetimepicker.pt-BR.js">
+    </script>
+    <script type="text/javascript">
+     $('#dateinicio').datetimepicker({
+        format: 'yyyy-MM-dd hh:mm:ss'
+      });
+     $('#datefinal').datetimepicker({
+        format: 'yyyy-MM-dd hh:mm:ss'
+      });
+/*
+
+     		var dataString = 'date='+selectedDate;
+			$.ajax({
+				type: "POST",
+				url: "save.php",
+				data: dataString,
+				success: function(data) {
+					$('#result').empty();
+					$('#result').html(data);
+				}
+			});
+*/
+    </script>
+
+
+
+
+<script src="http://www.eyecon.ro/bootstrap-datepicker/js/jquery.js"></script>
+<script type="text/javascript" src="http://www.eyecon.ro/bootstrap-datepicker/js/bootstrap-datepicker.js" charset="UTF-8"></script>
+
+
+	<style type="text/css">
+
+
+table {
+    display: table;
+    border-collapse: separate;
+    border-spacing: 2px;
+    border-color: grey;
 }
 
-thead {
-    margin: 10px auto;
-    border: 0;
+	.tab_cadre {
+    margin: 0 auto;
+    -moz-border-radius: 4px;
+    border: 1px solid #cccccc;
+    z-index: 1;
     text-align: left;
     font-size: 11px;
-    width: 95%;
     background-color: #ffffff;
-    -moz-box-shadow: 0px 1px 2px 1px #D2D2D2;
-    -webkit-box-shadow: 0px 1px 2px 1px #D2D2D2;
-    box-shadow: 0px 1px 2px 1px #D2D2D2;
-    border-spacing: 0;
+}
+.tab_bg_2 {
+    background-color: #e4e4e2;
+}
+
+.tab_cadre td, .tab_cadre_fixe td, .tab_cadre_fixehov td, .tab_cadrehov td, .tab_cadrehov_pointer td, .tab_cadre_report td {
+    padding-left: 5px;
+}
+
+select {
+    font-size: 11px;
+    border: 1px solid #888888;
+    color: black;
+    background-color: white;
+}
+
+.center {
+    text-align: center;
+}
+
+
+.tab_cadrehov, .tab_cadrehov_pointer {
+    margin: 0 auto;
+    -moz-border-radius: 4px;
+    border: 1px solid #cccccc;
+    text-align: left;
+    font-size: 11px;
+    background-color: #ffffff;
 }
 
 .tab_bg_2 {
-    background-color: #FFF;
+    background-color: #e4e4e2;
 }
 
-.tab_cadrehov th {
-    background-color: #F8F8F8;
-    color: #2E2E2E;
+.tab_cadre th, .tab_cadre_fixe th, .tab_cadre_fixehov th, .tab_cadrehov th, .tab_cadrehov_pointer th, .tab_cadre_report th {
     font-size: 11px;
-    border-bottom: 1px solid #EEE;
+    font-weight: bold;
+    background-color: #fccc6f;
+    text-align: center;
+    background: url("../pics/fond_th.png") repeat-x;
+    border-bottom: 1px solid #cccccc;
 }
 
-</style>
+.tab_cadre td, .tab_cadre_fixe td, .tab_cadre_fixehov td, .tab_cadrehov td, .tab_cadrehov_pointer td, .tab_cadre_report td {
+    padding-left: 5px;
+}
+
+
+#page form {
+    font-size: 12px;
+    margin: 0;
+    margin-bottom: 5px;
+    padding: 0;
+}
+
+
+	thead {
+	    margin: 10px auto;
+	    border: 0;
+	    text-align: left;
+	    font-size: 11px;
+	    width: 95%;
+	    background-color: #ffffff;
+	    -moz-box-shadow: 0px 1px 2px 1px #D2D2D2;
+	    -webkit-box-shadow: 0px 1px 2px 1px #D2D2D2;
+	    box-shadow: 0px 1px 2px 1px #D2D2D2;
+	    border-spacing: 0;
+	}
+
+	.tab_cadrehov th {
+	    background-color: #F8F8F8;
+	    color: #2E2E2E;
+	    font-size: 11px;
+	    border-bottom: 1px solid #EEE;
+	}
+
+	#aqui img{
+		margin: 0 auto;
+	}
+
+	</style>
+
+<script type="text/javascript">
+ jQuery(document).ready(function() {
+
+    $('.buscar').on("click", function(){
+    		$('#aqui').empty();
+
+			$('#aqui').append('<img src="img/ajax-loader.gif"/>');
+
+        	fechaini = $('#fechaini').val();
+        	fechafin = $('#fechafin').val();
+
+			grupo = $('select#getGroup').val();
+
+            var dataString = 'accion=getasesorias&fechaini='+fechaini+'&fechafin='+fechafin+'&grupo='+grupo;
+
+
+            $.ajax({
+                type: "POST",
+                url: "getajax.php",
+                data: dataString,
+                success: function(data) {
+                	//$('#aqui img').remove();
+                	console.log(data);
+                   	$('#aqui').empty();
+                    $('#aqui').html(data);
+                }
+            });
+     
+
+    });
+
+
+
+
+
+        function exportTableToCSV($table, filename) {
+
+        var $rows = $table.find('tr:has(td)'),
+
+            // Temporary delimiter characters unlikely to be typed by keyboard
+            // This is to avoid accidentally splitting the actual contents
+            tmpColDelim = String.fromCharCode(11), // vertical tab character
+            tmpRowDelim = String.fromCharCode(0), // null character
+
+            // actual delimiter characters for CSV format
+            colDelim = '","',
+            rowDelim = '"\r\n"',
+
+            // Grab text from table into CSV formatted string
+            csv = '"' + $rows.map(function (i, row) {
+                var $row = $(row),
+                    $cols = $row.find('td');
+
+                return $cols.map(function (j, col) {
+                    var $col = $(col),
+                        text = $col.text();
+
+                    return text.replace(/"/g, '""'); // escape double quotes
+
+                }).get().join(tmpColDelim);
+
+            }).get().join(tmpRowDelim)
+                .split(tmpRowDelim).join(rowDelim)
+                .split(tmpColDelim).join(colDelim) + '"',
+
+            // Data URI
+            csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+        $(this)
+            .attr({
+            'download': filename,
+                'href': csvData,
+                'target': '_blank'
+        });
+    }
+
+    // This must be a hyperlink
+    $(".export").on('click', function (event) {
+        // CSV
+        exportTableToCSV.apply(this, [$('#maintabla>table'), 'export.csv']);
+        
+        // IF CSV, don't do event.preventDefault() or return false
+        // We actually need this to be a typical hyperlink
+    });
+
+  });
+
+</script>
+</body>
+</html>
